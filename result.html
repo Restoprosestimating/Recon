@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recon ready · Restopros</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="mark">RP</div>
+      <div>
+        <h1>Restopros Recon Tracker</h1>
+        <p>Workbook built</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="card ok">
+      <h2>{{ parsed.property_line or parsed.insured or 'Job' }}</h2>
+      <p>Estimate {{ parsed.estimate_id or '—' }} · Price list {{ parsed.price_list or '—' }}</p>
+      <dl class="stats">
+        <div><dt>Labor hours parsed</dt><dd>{{ '%.2f'|format(hours) }}</dd></div>
+        <div><dt>Trades</dt><dd>{{ parsed.labor_rows|length }}</dd></div>
+        <div><dt>Xactimate RCV</dt><dd>${{ '%.2f'|format(parsed.rcv or 0) }}</dd></div>
+        <div><dt>Line item total</dt><dd>${{ '%.2f'|format(parsed.line_item_total or 0) }}</dd></div>
+        <div><dt>Materials</dt><dd>${{ '%.2f'|format(parsed.materials or 0) }}</dd></div>
+        <div><dt>Equipment</dt><dd>${{ '%.2f'|format(parsed.equipment or 0) }}</dd></div>
+      </dl>
+      {% if parsed.warnings %}
+      <ul class="warn">{% for w in parsed.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+      {% endif %}
+      <a class="btn" href="{{ url_for('download', name=filename) }}">Download {{ filename }}</a>
+      <a class="btn ghost" href="{{ url_for('index') }}">Another job</a>
+    </section>
+
+    <section class="card">
+      <h2>Labor rows</h2>
+      <table>
+        <thead><tr><th>Code</th><th>Trade</th><th>Role</th><th>Hours</th><th>Xact rate</th></tr></thead>
+        <tbody>
+        {% for r in parsed.labor_rows %}
+          <tr>
+            <td>{{ r.code }}</td>
+            <td>{{ r.description }}</td>
+            <td>{{ r.role }}</td>
+            <td>{{ '%.2f'|format(r.hours) }}</td>
+            <td>${{ '%.2f'|format(r.xact_rate) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

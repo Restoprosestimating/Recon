@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Restopros Recon Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="mark">RP</div>
+      <div>
+        <h1>Restopros Recon Tracker</h1>
+        <p>Internal TAM → labor recost · royalty · budget vs actual</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="notice">
+      <h2>Required upload</h2>
+      <p>
+        The uploaded document <strong>must be an Xactimate PDF Internal TAM report</strong>
+        with <strong>all 7 print selections checked</strong> in Documents → Reports → Print selections.
+        Final Draft, Sketch-only, or Abbreviated reports will be rejected.
+      </p>
+      <ol class="sels">
+        {% for s in print_selections %}
+        <li>{{ s }}</li>
+        {% endfor %}
+      </ol>
+      <p class="hint">
+        Labor breakdown is mandatory — Recon Tracker prices those hours at Restopros supervisor / worker rates.
+      </p>
+    </section>
+
+    {% if errors %}
+    <section class="errors">
+      <h2>Could not accept this PDF</h2>
+      <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      {% if missing %}
+      <p>Missing sections: {{ missing | join(', ') }}</p>
+      {% endif %}
+      {% if found %}
+      <p>Found: {{ found | join(', ') }}</p>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <section class="errors"><ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul></section>
+      {% endif %}
+    {% endwith %}
+
+    <form class="card" action="{{ url_for('process') }}" method="post" enctype="multipart/form-data">
+      <label class="file">
+        <span>Xactimate Internal TAM PDF</span>
+        <input type="file" name="estimate" accept="application/pdf,.pdf" required />
+      </label>
+
+      <div class="grid">
+        <label>Supervisor $/hr
+          <input name="rate_sup" type="number" step="0.01" value="30" />
+        </label>
+        <label>Worker $/hr
+          <input name="rate_wkr" type="number" step="0.01" value="22" />
+        </label>
+        <label>Burden rate
+          <input name="burden" type="number" step="0.001" value="0.18" />
+        </label>
+        <label>Royalty %
+          <input name="royalty" type="number" step="0.001" value="0.08" />
+        </label>
+        <label>Contingency %
+          <input name="contingency" type="number" step="0.001" value="0.05" />
+        </label>
+        <label>Negotiated price (optional)
+          <input name="negotiated" type="text" placeholder="Defaults to RCV" />
+        </label>
+      </div>
+
+      <button type="submit">Build recon workbook</button>
+    </form>
+
+    <section class="how">
+      <h2>What the workbook does</h2>
+      <ul>
+        <li>Reads Internal TAM labor-breakdown hours and recosts them at supervisor / worker gross rates plus burden.</li>
+        <li>Carries Xactimate material and equipment totals into budget sheets you can overwrite with actuals.</li>
+        <li>Applies royalty to the negotiated price (top box on Summary) and computes gross profit and margin.</li>
+        <li>Gives you variance columns and an invoice register for any Restopros job.</li>
+      </ul>
+    </section>
+  </main>
+  <footer>Restopros Recon Tracker · internal use</footer>
+</body>
+</html>
